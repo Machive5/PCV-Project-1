@@ -60,11 +60,11 @@ class GameView(arcade.View):
         self.sprite_list.append(self.player)
         self.sprite_list.append(self.enemy)
         self.sprite_list.append(self.puck)
+        
+        self.player_pos = [self.player.center_x, self.player.center_y]
 
         # self.mouse_x = self.player.center_x
         # self.mouse_y = self.player.center_y
-        
-        self.player_pos = shared.player_pos
 
     def reset_round(self, next_state: str):
         """Mereset posisi puck dan paddle ke posisi siap serve."""
@@ -190,6 +190,19 @@ class GameView(arcade.View):
 
     def on_update(self, delta_time: float):
         # 1. Update Player Paddle mengikuti mouse (tetap di separuh bawah)
+        if shared.player_pos is not None:
+            new_player_x = shared.player_pos[0] * self.bounds["width"]
+            new_player_y = self.bounds["height"] - shared.player_pos[1] * self.bounds["height"]
+            
+            # aplying lowpass filter to smooth the movement
+            alpha = 0.5  # smoothing factor
+            self.player_pos[0] = alpha * new_player_x + (1 - alpha) * self.player_pos[0]
+            self.player_pos[1] = alpha * new_player_y + (1 - alpha) * self.player_pos[1]
+            print(f"Player pos updated from shared: {self.player_pos}")
+        else:
+            self.player_pos[0] = self.player.center_x
+            self.player_pos[1] = self.player.center_y
+        
         self.player.move_to(self.player_pos[0], self.player_pos[1], self.bounds)
         self.player.update_velocity(delta_time)
 

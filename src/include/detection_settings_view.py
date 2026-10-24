@@ -1,6 +1,7 @@
 from typing import Callable
 
 import arcade
+import json
 from arcade.gui import (
     UIFlatButton,
     UILabel,
@@ -159,9 +160,6 @@ class DetectionSettings(UIView):
         @save_button.event("on_click")
         def on_save(event):
             self._save_thresholds()
-            if self.on_save is not None:
-                self.on_save()
-            self._set_status("Pengaturan threshold tersimpan.", (120, 210, 160))
 
     def _build_color_space_buttons(self, x: float, y: float):
         button_width = 98
@@ -209,6 +207,19 @@ class DetectionSettings(UIView):
             self._updating_sliders = False
 
     def _save_thresholds(self):
+        content = {
+            "color_space": shared.color_space,
+            "min_ch": list(shared.min_ch),
+            "max_ch": list(shared.max_ch),
+        }
+        filename = "saved_setting.json"
+        path = "./config/" + filename
+        try:
+            with open(path, "w") as f:
+                json.dump(content, f, indent=4)
+            self._set_status(f"Pengaturan threshold disimpan ke {filename}.", (120, 210, 160))
+        except Exception as e:
+            self._set_status(f"Gagal menyimpan pengaturan: {e}", (255, 100, 100))
         self._set_status("Menyimpan pengaturan threshold...", (200, 200, 200))
         
     def _update_value_label(self, channel: int):

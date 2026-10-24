@@ -86,11 +86,11 @@ class ObjectDetection:
                 self.cvt_color_code = cv2.COLOR_BGR2YCrCb
             else:
                 self.cvt_color_code = None
-                
+            
+            cv2.flip(self.frame, 1, self.frame)
             cv2.cvtColor(self.frame, self.cvt_color_code, self.frame) if self.cvt_color_code is not None else self.frame
-            
-            
             show_frame = self.frame.copy()
+            
             if shared.is_calib == True or self.auto_threshold == True:
                 # print(f"ROI_calib: {self.ROI_calib}, mouse_pos: {self.mouse_pos}")
                 if self.ROI_calib[0] is not None and self.ROI_calib[1] is not None:
@@ -99,10 +99,38 @@ class ObjectDetection:
                 if self.ROI_calib[0] is not None and self.ROI_calib[1] is not None and self.mouse_pos[0] is not None and self.mouse_pos[1] is not None:
                     cv2.rectangle(show_frame, (self.ROI_calib[0], self.ROI_calib[1]), (self.mouse_pos[0], self.mouse_pos[1]), (0,255,0), 3)
 
+            thresholded_image = cv2.inRange(self.frame, np.array(shared.min_ch), np.array(shared.max_ch))
+            cv2.erode(thresholded_image, cv2.getStructuringElement(cv2.MORPH_RECT, (2, 2)), thresholded_image, iterations= 1)
+            cv2.dilate(thresholded_image, cv2.getStructuringElement(cv2.MORPH_CROSS, (2, 2)), thresholded_image, iterations=5)
             
+            contour , _ = cv2.findContours(thresholded_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            convex_hull_area = thresholded_image.copy()
+            
+            for cnt in contour:
+                convex_hull = cv2.convexHull(cnt)
+                cv2.drawContours(convex_hull_area, [convex_hull], -1, (255, 255, 255), -1)
+                
+            contour, _ = cv2.findContours(convex_hull_area, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            sorted_contours = sorted(contour, key=cv2.contourArea, reverse=True)
+            if sorted_contours:
+                largest_contour = sorted_contours[0]
+                cv2.rectangle(show_frame, cv2.boundingRect(largest_contour), (0, 255, 0), 2)
+                M = cv2.moments(largest_contour)
+                if M["m00"] != 0:
+                    cX = int(M["m10"] / M["m00"])
+                    cY = int(M["m01"] / M["m00"])
+                    normalized_cX = cX / show_frame.shape[1]
+                    normalized_cY = cY / show_frame.shape[0]
+                    shared.player_pos = (normalized_cX, normalized_cY)
+                    cv2.circle(show_frame, (cX, cY), 5, (0, 255, 0), -1)
+                    cv2.putText(show_frame, f"Player Pos: ({cX}, {cY})", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+                
+            thresholded_image = cv2.bitwise_or(thresholded_image, convex_hull_area)
+                
             
             # Display the processed frame
             cv2.imshow('Object Detection', show_frame)
+            cv2.imshow('Thresholded Image', thresholded_image)
             # cv2.imshow('Thresshold Settings', np.zeros((1, 400), dtype=np.uint8))  # Placeholder for trackbars
 
             # Exit on 'q' key press
