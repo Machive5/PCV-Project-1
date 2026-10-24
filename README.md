@@ -116,7 +116,7 @@ Sebelum bermain, lakukan kalibrasi objek yang akan digunakan sebagai kontrol pad
 
 Objek dengan area kontur terbesar digunakan sebagai objek kontrol. Posisi centroid objek dinormalisasi dan dipetakan ke posisi paddle pemain pada area permainan.
 
-[![Watch the video](https://raw.githubusercontent.com/Machive5/PCV-Project-1/main/assets/threshold_video.mp4)](https://raw.githubusercontent.com/Machive5/PCV-Project-1/main/assets/threshold_video.mp4)
+[![Watch the video](./assets/threshold_video.gif)](URL_THRESHOLD_VIDEO)
 
 ## Cara Bermain
 
@@ -127,7 +127,7 @@ Objek dengan area kontur terbesar digunakan sebagai objek kontrol. Posisi centro
 - Paddle musuh dikendalikan oleh AI.
 - Pemain mendapatkan skor ketika puck masuk ke gawang lawan.
 
-[![Watch the video](https://raw.githubusercontent.com/Machive5/PCV-Project-1/main/assets/play_game_video.mp4)](https://raw.githubusercontent.com/Machive5/PCV-Project-1/main/assets/play_game_video.mp4)
+[![Watch the video](./assets/play_game_video.gif)](URL_PLAY_GAME_VIDEO)
 
 ## Alur Sistem
 
