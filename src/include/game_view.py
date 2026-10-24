@@ -192,7 +192,7 @@ class GameView(arcade.View):
         # 1. Update Player Paddle mengikuti mouse (tetap di separuh bawah)
         if shared.player_pos is not None:
             new_player_x = shared.player_pos[0] * self.bounds["width"]
-            new_player_y = self.bounds["height"] - shared.player_pos[1] * self.bounds["height"]
+            new_player_y = (self.bounds["height"] - shared.player_pos[1] * self.bounds["height"])/2
             
             # aplying lowpass filter to smooth the movement
             alpha = 0.5  # smoothing factor

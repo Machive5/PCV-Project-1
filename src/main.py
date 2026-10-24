@@ -2,17 +2,18 @@ import arcade
 import include.shared as shared
 import json
 import os
+from threading import Thread
+
 from include.game_view import GameView
 from include.image_processing import ObjectDetection
 from include.detection_settings_view import DetectionSettings
-from threading import Thread
+from include.menu_view import MenuView
 
 SCREEN_WIDTH = 600
 SCREEN_HEIGHT = 900
 SCREEN_TITLE = "Hockey"
 
 shared.player_pos = (SCREEN_WIDTH / 2, SCREEN_HEIGHT * 0.25)
-shared.is_calib = True
 
 window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, SCREEN_TITLE, update_rate=1/60)
 game_view = GameView(screen_width=SCREEN_WIDTH, screen_height=SCREEN_HEIGHT)
@@ -21,6 +22,14 @@ detection_settings_view = DetectionSettings(
     screen_width=SCREEN_WIDTH,
     screen_height=SCREEN_HEIGHT,
     object_detection=object_detection,
+    on_back=lambda: window.show_view(menu_view),
+)
+menu_view = MenuView(
+    screen_width=SCREEN_WIDTH,
+    screen_height=SCREEN_HEIGHT,
+    on_play=lambda: window.show_view(game_view),
+    on_calibrate_camera=lambda: window.show_view(detection_settings_view),
+    on_quit=window.close,
 )
 
 def thread_pcv_loop():
@@ -39,8 +48,9 @@ def main():
     
     pcv_thread = Thread(target=thread_pcv_loop)
     pcv_thread.start()
-    window.show_view(game_view)
+    # window.show_view(game_view)
     # window.show_view(detection_settings_view)
+    window.show_view(menu_view)
     arcade.run()
     pcv_thread.join()
 

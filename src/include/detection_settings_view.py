@@ -15,7 +15,7 @@ import include.shared as shared
 
 
 class DetectionSettings(UIView):
-    COLOR_SPACES = ("BGR", "HLS", "HSV", "YUV", "YCrCb")
+    COLOR_SPACES = ("BGR", "HLS", "HSV", "LAB", "YUV", "YCrCb")
     CHANNEL_NAMES = ("Channel 1", "Channel 2", "Channel 3")
 
     def __init__(
@@ -24,12 +24,14 @@ class DetectionSettings(UIView):
         screen_height: int,
         object_detection: ObjectDetection,
         on_save: Callable[[], None] | None = None,
+        on_back: Callable[[], None] | None = None,
     ):
         super().__init__()
         self.screen_width = screen_width
         self.screen_height = screen_height
         self.object_detection = object_detection
         self.on_save = on_save
+        self.on_back = on_back
         self.status_label: UILabel | None = None
         self.value_labels: list[UILabel] = []
         self.sliders: list[tuple[UISlider, UISlider]] = []
@@ -139,7 +141,15 @@ class DetectionSettings(UIView):
             width=150,
             height=48,
         )
+        back_button = UIFlatButton(
+            text="Back",
+            x=self.bounds["right"] - 310,
+            y=button_y,
+            width=150,
+            height=48,
+        )
         self.ui.add(auto_button)
+        self.ui.add(back_button)
         self.ui.add(save_button)
         self.status_label = UILabel(
             "",
@@ -161,8 +171,14 @@ class DetectionSettings(UIView):
         def on_save(event):
             self._save_thresholds()
 
+        @back_button.event("on_click")
+        def on_back(event):
+            shared.is_calib = False
+            if self.on_back is not None:
+                self.on_back()
+
     def _build_color_space_buttons(self, x: float, y: float):
-        button_width = 98
+        button_width = 70
         for index, color_space in enumerate(self.COLOR_SPACES):
             button = UIFlatButton(
                 text=color_space,
@@ -217,10 +233,9 @@ class DetectionSettings(UIView):
         try:
             with open(path, "w") as f:
                 json.dump(content, f, indent=4)
-            self._set_status(f"Pengaturan threshold disimpan ke {filename}.", (120, 210, 160))
+            self._set_status(f"Pengaturan threshold disimpan.", (120, 210, 160))
         except Exception as e:
             self._set_status(f"Gagal menyimpan pengaturan: {e}", (255, 100, 100))
-        self._set_status("Menyimpan pengaturan threshold...", (200, 200, 200))
         
     def _update_value_label(self, channel: int):
         minimum, maximum = self.sliders[channel]
